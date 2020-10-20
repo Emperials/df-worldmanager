@@ -13,7 +13,7 @@ import (
 // WorldManager manages multiple worlds, dragonfly does not have multi-world management itself,
 // so we must implement it ourselves.
 type WorldManager struct {
-	s dragonfly.Server
+	s *dragonfly.Server
 
 	folderPath string
 
@@ -24,7 +24,7 @@ type WorldManager struct {
 }
 
 // New ...
-func New(server dragonfly.Server, folderPath string, log *logrus.Logger) *WorldManager {
+func New(server *dragonfly.Server, folderPath string, log *logrus.Logger) *WorldManager {
 	_ = os.Mkdir(folderPath, 0644)
 	return &WorldManager{
 		s:          server,
