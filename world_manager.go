@@ -48,12 +48,13 @@ func (m *WorldManager) World(name string) (*world.World, bool) {
 }
 
 // LoadWorld ...
-func (m *WorldManager) LoadWorld(folderName string, simulationDistance int) error {
+func (m *WorldManager) LoadWorld(folderName, worldName string, simulationDistance int) error {
 	w := world.New(m.log, simulationDistance)
 	p, err := mcdb.New(m.folderPath + "/" + folderName)
 	if err != nil {
 		return fmt.Errorf("error loading world: %v", err)
 	}
+	p.SetWorldName(worldName)
 
 	w.Provider(p)
 	if _, ok := m.World(w.Name()); ok {
