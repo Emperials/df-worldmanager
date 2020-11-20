@@ -39,6 +39,18 @@ func (m *WorldManager) DefaultWorld() *world.World {
 	return m.s.World()
 }
 
+// Worlds ...
+func (m *WorldManager) Worlds() []*world.World {
+	m.worldsMu.RLock()
+	defer m.worldsMu.RUnlock()
+
+	worlds := make([]*world.World, 0, len(m.worlds))
+	for _, w := range m.worlds {
+		worlds = append(worlds, w)
+	}
+	return worlds
+}
+
 // World ...
 func (m *WorldManager) World(name string) (*world.World, bool) {
 	m.worldsMu.RLock()
