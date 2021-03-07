@@ -26,11 +26,14 @@ type WorldManager struct {
 // New ...
 func New(server *dragonfly.Server, folderPath string, log *logrus.Logger) *WorldManager {
 	_ = os.Mkdir(folderPath, 0644)
+	defaultWorld := server.World()
 	return &WorldManager{
 		s:          server,
 		folderPath: folderPath,
 		log:        log,
-		worlds:     make(map[string]*world.World),
+		worlds: map[string]*world.World{
+			defaultWorld.Name(): defaultWorld,
+		},
 	}
 }
 
@@ -42,12 +45,11 @@ func (m *WorldManager) DefaultWorld() *world.World {
 // Worlds ...
 func (m *WorldManager) Worlds() []*world.World {
 	m.worldsMu.RLock()
-	defer m.worldsMu.RUnlock()
-
 	worlds := make([]*world.World, 0, len(m.worlds))
 	for _, w := range m.worlds {
 		worlds = append(worlds, w)
 	}
+	m.worldsMu.RUnlock()
 	return worlds
 }
 
@@ -61,6 +63,10 @@ func (m *WorldManager) World(name string) (*world.World, bool) {
 
 // LoadWorld ...
 func (m *WorldManager) LoadWorld(folderName, worldName string, simulationDistance int) error {
+	if _, ok := m.World(worldName); ok {
+		return fmt.Errorf("world is already loaded")
+	}
+
 	w := world.New(m.log, simulationDistance)
 	p, err := mcdb.New(m.folderPath + "/" + folderName)
 	if err != nil {
@@ -69,9 +75,6 @@ func (m *WorldManager) LoadWorld(folderName, worldName string, simulationDistanc
 	p.SetWorldName(worldName)
 
 	w.Provider(p)
-	if _, ok := m.World(w.Name()); ok {
-		return fmt.Errorf("world is already loaded")
-	}
 
 	m.worldsMu.Lock()
 	m.worlds[w.Name()] = w
@@ -112,6 +115,11 @@ func (m *WorldManager) UnloadWorld(w *world.World) error {
 func (m *WorldManager) Close() error {
 	m.worldsMu.Lock()
 	for _, w := range m.worlds {
+		// Let dragonfly close this.
+		if w == m.DefaultWorld() {
+			continue
+		}
+
 		m.log.Debugf("Closing world '%v'\n", w.Name())
 		if err := w.Close(); err != nil {
 			return err
