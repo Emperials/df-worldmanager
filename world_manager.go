@@ -2,9 +2,9 @@ package worldmanager
 
 import (
 	"fmt"
-	"github.com/df-mc/dragonfly/dragonfly"
-	"github.com/df-mc/dragonfly/dragonfly/world"
-	"github.com/df-mc/dragonfly/dragonfly/world/mcdb"
+	"github.com/df-mc/dragonfly/server"
+	"github.com/df-mc/dragonfly/server/world"
+	"github.com/df-mc/dragonfly/server/world/mcdb"
 	"github.com/sirupsen/logrus"
 	"os"
 	"sync"
@@ -13,7 +13,7 @@ import (
 // WorldManager manages multiple worlds, dragonfly does not have multi-world management itself,
 // so we must implement it ourselves.
 type WorldManager struct {
-	s *dragonfly.Server
+	s *server.Server
 
 	folderPath string
 
@@ -24,7 +24,7 @@ type WorldManager struct {
 }
 
 // New ...
-func New(server *dragonfly.Server, folderPath string, log *logrus.Logger) *WorldManager {
+func New(server *server.Server, folderPath string, log *logrus.Logger) *WorldManager {
 	_ = os.Mkdir(folderPath, 0644)
 	return &WorldManager{
 		s:          server,
