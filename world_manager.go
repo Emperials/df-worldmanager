@@ -128,7 +128,7 @@ func (m *WorldManager) Close() error {
 			return err
 		}
 	}
-	m.worlds = map[string]*world.World{}
+	m.worlds = nil
 	m.worldsMu.Unlock()
 	return nil
 }
